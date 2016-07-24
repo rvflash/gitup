@@ -1,18 +1,18 @@
 package gitflow
 
 import (
+	"errors"
 	"os/exec"
 	"strings"
-	"errors"
 )
 
 const (
 	errMsgUndefinedPath = "Directory path is undefined"
-	errMsgUndefinedTag = "Tag name is undefined"
+	errMsgUndefinedTag  = "Tag name is undefined"
 )
 
 type Repo struct {
-	Path string
+	Path  string
 	valid bool
 }
 
@@ -85,4 +85,12 @@ func (r *Repo) CheckoutTag(tag string) (err error) {
 		return errors.New(errMsgUndefinedTag)
 	}
 	return exec.Command("git", "-C", r.Path, "checkout", tag).Run()
+}
+
+// IsRepository return true if the repo is a valid Git repository.
+func (r *Repo) IsRepository() bool {
+	if err := r.gitCheck(); err != nil {
+		return r.valid
+	}
+	return false
 }
