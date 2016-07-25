@@ -37,12 +37,11 @@ var okTests = []struct {
 }
 
 var cpErrTests = []struct {
-	tag1 string              // input tag #1
-	tag2 string              // input tag #2
-	diff semver.Relationship // expected result
+	tag1 string // input tag #1
+	tag2 string // input tag #2
 }{
-	{"1.2.3", "v1.2.3", semver.Relationship{}},
-	{"v1.2.3", "1.2.3", semver.Relationship{}},
+	{"1.2.3", "v1.2.3"},
+	{"v1.2.3", "1.2.3"},
 }
 
 var cpOkTests = []struct {
