@@ -24,15 +24,6 @@ type Relationship struct {
 	Upstream            int8
 }
 
-// toVersionNumber returns a uint8 number for a string version.
-func toVersionNumber(version string) (number uint8, err error) {
-	var num uint64
-	if num, err = strconv.ParseUint(version, 10, 8); err == nil {
-		number = uint8(num)
-	}
-	return
-}
-
 // Compare returns the difference for each type and the relation between two versions.
 func Compare(tag1 string, tag2 string) (version Relationship, err error) {
 	var v1, v2 Version
@@ -125,6 +116,15 @@ func Parse(tag string) (version Version, err error) {
 	// Path
 	if version.Patch, err = toVersionNumber(ver[2][:ep]); err != nil {
 		err = errors.New(errMsgSemanticVersion)
+	}
+	return
+}
+
+// toVersionNumber returns a uint8 number for a string version.
+func toVersionNumber(version string) (number uint8, err error) {
+	var num uint64
+	if num, err = strconv.ParseUint(version, 10, 8); err == nil {
+		number = uint8(num)
 	}
 	return
 }
