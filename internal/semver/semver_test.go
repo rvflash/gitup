@@ -9,8 +9,10 @@ var errTests = []struct {
 	tag string // input
 }{
 	{" "},
+	{"v"},
 	{"v1.2"},
 	{"1.2.3"},
+	{"va.b.c"},
 	{"v1.2.a"},
 	{"v1.a.3"},
 	{"v1.2.3-"},
@@ -18,6 +20,7 @@ var errTests = []struct {
 	{"v1.2.3-+2"},
 	{"v1+5114f85"},
 	{"v1.2.3.beta2"},
+	{"v1.2.3-beta2+"},
 }
 
 var okTests = []struct {
@@ -57,6 +60,7 @@ var cpOkTests = []struct {
 	{"v1.2.3-alpha", "v1.2.3-beta", semver.Relationship{0, 0, 0, "alpha<>beta", "", -1}},
 	{"v1.2.3+92", "v1.2.3", semver.Relationship{0, 0, 0, "", "92<>", 0}},
 	{"v1.2.3-beta+92", "v0.2.3-beta", semver.Relationship{1, 0, 0, "", "92<>", 1}},
+	{"v1.2.3", "v1.2.3-beta+92", semver.Relationship{0, 0, 0, "<>beta", "<>92", -1}},
 }
 
 // TestCompare tests Compare method with invalid or valid Semantic Version.
