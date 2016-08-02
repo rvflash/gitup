@@ -44,6 +44,14 @@ var commitTests = []struct {
 	{commitTest, remoteTagTest},       // commit
 }
 
+var tagTests = []struct {
+	tag string // input
+}{
+	{""},
+	{" " + gitTagFolder + remoteTagTest},
+	{gitTagFolder + remoteTagTest + " "},
+}
+
 // fakeExecCommand returns a mock of the exec command.
 func fakeExecCommand(command string, args ...string) *exec.Cmd {
 	cs := []string{"-test.run=TestHelperProcess", "--", command}
@@ -158,6 +166,31 @@ func TestGitCheck(t *testing.T) {
 	}
 }
 
+// TestGitCheckout tests the internal method dedicated to git checkout.
+func TestGitCheckout(t *testing.T) {
+	execCommand = fakeExecCommand
+
+	// Restore exec command behavior at the end of the test.
+	defer func() { execCommand = exec.Command }()
+
+	// Checks with incorrect path.
+	r := new(Repo)
+	r.path = errPathTest
+	for _, c := range tagTests {
+		if err := r.gitCheckout(c.tag); err == nil {
+			t.Errorf("Expected error with branch '%v' on invalid Git path '%v'", c.tag, errPathTest)
+		}
+	}
+	// Checks with valid path
+	r = new(Repo)
+	r.path = okPathTest
+	for _, c := range tagTests {
+		if err := r.gitCheckout(c.tag); err != nil {
+			t.Errorf("Expected no error with valid path '%v' and branch '%v', got: %v", okPathTest, c.tag, err)
+		}
+	}
+}
+
 // TestGitDescribe tests the internal method dedicated to git describe.
 func TestGitDescribe(t *testing.T) {
 	execCommand = fakeExecCommand
@@ -265,10 +298,18 @@ func TestHelperProcess(*testing.T) {
 	// Manage each git sub-commands.
 	switch args[2] {
 	case "checkout":
-		if args[3] == remoteTagTest && len(args) == 4 {
-			fmt.Fprintf(os.Stdout, "note: checking out '%v'.", remoteTagTest)
-		} else {
-			fmt.Fprintf(os.Stderr, "error: pathspec '%v' did not match any file(s) known to git.\n", args[3])
+		switch len(args) {
+		case 4:
+			if args[3] == gitTagFolder+remoteTagTest {
+				fmt.Fprintf(os.Stdout, "note: checking out '%v'.", remoteTagTest)
+			} else {
+				fmt.Fprintf(os.Stderr, "error: pathspec '%v' did not match any file(s) known to git.\n", args[3])
+				os.Exit(1)
+			}
+		case 3:
+			fmt.Fprintf(os.Stdout, "Your branch is up-to-date with '%v%v'.", gitTagFolder, tagTest)
+		default:
+			fmt.Fprintf(os.Stderr, "fatal: Not a git repository (or any of the parent directories): .git\n", args[1])
 			os.Exit(1)
 		}
 	case "describe":
