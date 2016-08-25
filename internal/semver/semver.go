@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	errMsgSemanticVersion = "Not a valid semantic version."
+	errMsgSemanticVersion = "not a valid semantic version"
 )
 
 // Semantic Versioning 2.0.0

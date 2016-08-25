@@ -8,8 +8,8 @@ import (
 
 const (
 	gitTagFolder        = "tags/"
-	errMsgUndefinedPath = "Directory path is undefined."
-	errMsgUndefinedTag  = "Tag name is undefined."
+	errMsgUndefinedPath = "directory path is undefined"
+	errMsgUndefinedTag  = "tag name is undefined"
 )
 
 type Repo struct {
@@ -17,7 +17,7 @@ type Repo struct {
 	valid bool
 }
 
-// Enable testing by mocking.
+// Enable testing by mocking *exec.Cmd.
 var execCommand = exec.Command
 
 // NewRepo starts a new Git repository.
