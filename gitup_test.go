@@ -12,27 +12,14 @@ func Example() {
 	sup := up.UpdateStrategy{}
 	sup.AddStrategy(up.MajorVersion, up.Auto)
 
-	// Gets the path of the current repository
-	pwd, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	// Gets the path of the current repository and ignores the errors just for the demo
+	pwd, _ := os.Getwd()
 
 	// Applies update strategy on current Git repository
-	repo, err := up.NewRepo(pwd)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	repo, _ := up.NewRepo(pwd)
 	if repo.InDemand(sup) {
-		if err := repo.Update(sup); err != nil {
-			fmt.Println("Now, you are on the last version of GitUp.")
-		} else {
-			fmt.Printf("Oups, an error occured: %v", err)
-		}
-	} else {
-		fmt.Println("You are already on the last version of GitUp.")
+		repo.Update(sup)
 	}
-	// Output: You are already on the last version of GitUp.
+	fmt.Println("You are on the last version of GitUp.")
+	// Output: You are on the last version of GitUp.
 }
