@@ -1,10 +1,44 @@
 package gitup
 
 import (
+	"errors"
+	"github.com/rvflash/gitup/internal/gitflow"
 	"io/ioutil"
 	"os"
 	"testing"
 )
+
+const (
+	errMsgFake = "fake error"
+	errValue   = "error"
+)
+
+// FakeGitFlow implements GitFlow to order to mock *gitflow.Repo.
+type FakeGitFlow struct {
+	localError, remoteError, checkoutError bool
+	localTag, remoteTag                    string
+}
+
+var repoTests = []struct {
+	git      *FakeGitFlow
+	strategy UpdateStrategy
+	inDemand bool
+	stdin    string
+}{
+	{&FakeGitFlow{true, true, false, "", ""}, UpdateStrategy{}, false, ""}, // Invalid entries, errors
+	{&FakeGitFlow{false, true, false, "v1.0.0", ""}, UpdateStrategy{}, false, ""},
+	{&FakeGitFlow{true, false, false, "", "v1.0.0"}, UpdateStrategy{}, false, ""},
+	{&FakeGitFlow{false, false, true, "v1.0.0", "v1.0.0"}, UpdateStrategy{}, false, ""},
+	{&FakeGitFlow{false, false, false, "v1.0", "v1.0.0"}, UpdateStrategy{}, false, ""},
+	{&FakeGitFlow{false, false, true, "v1.0.0", "v1.1.0"}, UpdateStrategy{[4]uint8{Auto}}, true, ""},
+	{&FakeGitFlow{false, false, false, "v1.0.0", "v1.0.0"}, UpdateStrategy{}, false, ""}, // Valid entries, fails
+	{&FakeGitFlow{false, false, false, "v1.0.0", "v2.0.0"}, UpdateStrategy{}, false, ""},
+	{&FakeGitFlow{false, false, false, "v2.0.0", "v1.0.0"}, UpdateStrategy{}, false, ""},
+	{&FakeGitFlow{false, false, false, "v1.0.0", "v1.0.1"}, UpdateStrategy{[4]uint8{Auto}}, true, ""}, // Valid entries, successfull
+	{&FakeGitFlow{false, false, false, "v1.0.0-alpha", "v1.0.0-beta"}, UpdateStrategy{[4]uint8{Auto}}, true, ""},
+	{&FakeGitFlow{false, false, false, "v1.0.0", "v2.0.0"}, UpdateStrategy{[4]uint8{Manual}}, true, "y"},
+	{&FakeGitFlow{false, false, false, "v1.0.0", "v2.0.0"}, UpdateStrategy{[4]uint8{Manual}}, true, "n"},
+}
 
 var confirmTests = []struct {
 	str       string // input
@@ -57,6 +91,30 @@ var actionTests = []struct {
 	{[4]uint8{Auto, Auto, Noop, Noop}, [4]uint8{Auto, Auto, Auto, Auto}},
 }
 
+// LocalTag mocks the gitflow's method LocalTag() on FakeGitFlow struct.
+func (r FakeGitFlow) LocalTag() (string, error) {
+	if r.localError {
+		return "", errors.New(errMsgFake)
+	}
+	return r.localTag, nil
+}
+
+// LastTag mocks the gitflow's method LastTag() on FakeGitFlow struct.
+func (r FakeGitFlow) LastTag() (string, error) {
+	if r.remoteError {
+		return "", errors.New(errMsgFake)
+	}
+	return r.remoteTag, nil
+}
+
+// CheckoutTag mocks the gitflow's method CheckoutTag() on FakeGitFlow struct.
+func (r FakeGitFlow) CheckoutTag(string) error {
+	if r.checkoutError {
+		return errors.New(errMsgFake)
+	}
+	return nil
+}
+
 // fakeStdin returns a temporary file with required content to mock stdin.
 // os.Stdin as a file implements *os.File interface.
 func fakeStdin(str string) (stdin *os.File, err error) {
@@ -70,6 +128,63 @@ func fakeStdin(str string) (stdin *os.File, err error) {
 	}
 	// Opens it in order to scan it as stdin.
 	return os.Open(stdin.Name())
+}
+
+// TestNewRepo tests NewRepo method with various values and uses mock to get a fake Git repository.
+func TestNewRepo(t *testing.T) {
+	gitRepo = func(path string) (*gitflow.Repo, error) {
+		if path == errValue {
+			return nil, errors.New(errMsgFake)
+		}
+		return &gitflow.Repo{}, nil
+	}
+	// Restore new repo behavior at the end of the test.
+	defer func() { gitRepo = gitflow.NewRepo }()
+
+	// Checks with various type of path
+	for _, pt := range []string{errValue, "/repo"} {
+		if _, err := NewRepo(pt); err != nil {
+			if pt != errValue {
+				t.Errorf("Expected no error with valid path '%v', got: %v", pt, err)
+			}
+		} else if pt == errValue {
+			t.Errorf("Expected an error with invalid path '%v'", pt)
+		}
+	}
+}
+
+// TestRepo_InDemand tests InDemand method with various valid or invalid values
+func TestRepo_InDemand(t *testing.T) {
+	for _, rt := range repoTests {
+		r := &Repo{git: rt.git}
+		if r.InDemand(rt.strategy) {
+			if !rt.inDemand {
+				t.Errorf("Expected no update with repository %#v and strategy %#v", rt.git, rt.strategy)
+			}
+		} else if rt.inDemand {
+			t.Errorf("Expected an update with repository %#v and strategy %#v", rt.git, rt.strategy)
+		}
+	}
+}
+
+// TestRepo_Update tests Update method with various valid or invalid values
+func TestRepo_Update(t *testing.T) {
+	// Restore stdin source file at the end of the test.
+	defer func() { stdin = os.Stdin }()
+
+	for _, rt := range repoTests {
+		r := &Repo{git: rt.git}
+		if rt.stdin != "" {
+			stdin, _ = fakeStdin(rt.stdin)
+		}
+		if err := r.Update(rt.strategy); err == nil {
+			if !rt.inDemand || rt.git.checkoutError {
+				t.Errorf("Expected error and no update with repository %#v and strategy %#v", rt.git, rt.strategy)
+			}
+		} else if rt.inDemand && !rt.git.checkoutError {
+			t.Errorf("Expected an update with repository %#v and strategy %#v", rt.git, rt.strategy)
+		}
+	}
 }
 
 // TestAddStrategy tests AddStrategy method with various values.
