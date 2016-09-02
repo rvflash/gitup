@@ -15,5 +15,5 @@ See the GitUp test for an example of using.
 
 ## Use SemVer for the version tag name
 
-The tag name must be compliant to the Semantic Versioning 2.0, see semver.org/spec/v2.0.0.html for more information.
+The tag name must be compliant to the [Semantic Versioning 2.0](http://semver.org/spec/v2.0.0.html).
 As example, v2.0.0-beta is a valid version tag but not 2.0.
