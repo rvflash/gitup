@@ -52,9 +52,12 @@ type UpdateStrategy struct {
 // Enable testing by mocking *os.File.
 var stdin = os.Stdin
 
+// Enable testing by mocking *gitflow.Repo.
+var gitRepo = gitflow.NewRepo
+
 // NewRepo starts a new Git repository.
 func NewRepo(path string) (*Repo, error) {
-	if git, err := gitflow.NewRepo(path); err != nil {
+	if git, err := gitRepo(path); err != nil {
 		return nil, err
 	} else {
 		return &Repo{git: git}, nil
