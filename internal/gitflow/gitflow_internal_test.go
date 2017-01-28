@@ -309,7 +309,7 @@ func TestHelperProcess(*testing.T) {
 		case 3:
 			fmt.Fprintf(os.Stdout, "Your branch is up-to-date with '%v%v'.", gitTagFolder, tagTest)
 		default:
-			fmt.Fprintf(os.Stderr, "fatal: Not a git repository (or any of the parent directories): .git\n", args[1])
+			fmt.Fprintf(os.Stderr, "fatal: Not a git repository (or any of the parent directories): .git\n")
 			os.Exit(1)
 		}
 	case "describe":

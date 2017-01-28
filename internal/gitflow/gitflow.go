@@ -12,6 +12,7 @@ const (
 	errMsgUndefinedTag  = "tag name is undefined"
 )
 
+// Repo represents a Git repository.
 type Repo struct {
 	path  string
 	valid bool
