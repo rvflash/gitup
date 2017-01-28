@@ -1,5 +1,11 @@
 # GitUp
 
+[![GoDoc](https://godoc.org/github.com/rvflash/gitup?status.svg)](https://godoc.org/github.com/rvflash/gitup)
+[![Build Status](https://img.shields.io/travis/rvflash/gitup.svg)](https://travis-ci.org/rvflash/gitup)
+[![Code Coverage](https://img.shields.io/codecov/c/github/rvflash/gitup.svg)](http://codecov.io/github/rvflash/gitup?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/rvflash/gitup)](https://goreportcard.com/report/github.com/rvflash/gitup)
+
+
 Automatically checks and updates if wished the latest tag of a Git repository.
 
 
