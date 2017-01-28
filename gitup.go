@@ -4,17 +4,20 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/rvflash/gitup/internal/gitflow"
 	"github.com/rvflash/gitup/internal/semver"
-	"os"
 )
 
+// Update mode.
 const (
 	Noop   = iota // 0
 	Manual        // 1
 	Auto          // 2
 )
 
+// Version tags.
 const (
 	MajorVersion      = iota // 0
 	MinorVersion             // 1
@@ -23,6 +26,7 @@ const (
 	BuildMetadata            // 4
 )
 
+// Error messages.
 const (
 	errMsgVersion         = "unknown type of version"
 	errMsgAction          = "unknown action's type"
@@ -31,12 +35,14 @@ const (
 	errMsgDowngradeAction = "unable to downgrade behavior on minor versions"
 )
 
+// GitFlow returns the current state of the repository.
 type GitFlow interface {
 	LocalTag() (string, error)
 	LastTag() (string, error)
 	CheckoutTag(string) error
 }
 
+// Repo represents a Git repository.
 type Repo struct {
 	git           GitFlow
 	diff          semver.Relationship
@@ -44,6 +50,7 @@ type Repo struct {
 	upStrategy    uint8
 }
 
+// UpdateStrategy represents the update mode.
 type UpdateStrategy struct {
 	until [4]uint8
 	// soon, we will also manage retryLater.
@@ -57,11 +64,11 @@ var gitRepo = gitflow.NewRepo
 
 // NewRepo starts a new Git repository.
 func NewRepo(path string) (*Repo, error) {
-	if git, err := gitRepo(path); err != nil {
+	git, err := gitRepo(path)
+	if err != nil {
 		return nil, err
-	} else {
-		return &Repo{git: git}, nil
 	}
+	return &Repo{git: git}, nil
 }
 
 // AddStrategy starts a new Git repository.
@@ -126,7 +133,7 @@ func (r *Repo) Update(s UpdateStrategy) error {
 	// Manual update required, demands authorisation to user
 	if r.upStrategy == Manual {
 		// Display a message in order to inform about the available update.
-		fmt.Printf("You are currenly on the '%v', a new version is available.\n", r.local)
+		fmt.Printf("You are currently on the '%v', a new version is available.\n", r.local)
 		fmt.Printf("Do you want to update and move on '%v'?\n", r.remote)
 		if !confirmUpdate() {
 			return nil
