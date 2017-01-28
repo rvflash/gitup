@@ -34,7 +34,7 @@ var repoTests = []struct {
 	{&FakeGitFlow{false, false, false, "v1.0.0", "v1.0.0"}, UpdateStrategy{}, false, ""}, // Valid entries, fails
 	{&FakeGitFlow{false, false, false, "v1.0.0", "v2.0.0"}, UpdateStrategy{}, false, ""},
 	{&FakeGitFlow{false, false, false, "v2.0.0", "v1.0.0"}, UpdateStrategy{}, false, ""},
-	{&FakeGitFlow{false, false, false, "v1.0.0", "v1.0.1"}, UpdateStrategy{[4]uint8{Auto}}, true, ""}, // Valid entries, successfull
+	{&FakeGitFlow{false, false, false, "v1.0.0", "v1.0.1"}, UpdateStrategy{[4]uint8{Auto}}, true, ""}, // Valid entries, successful
 	{&FakeGitFlow{false, false, false, "v1.0.0-alpha", "v1.0.0-beta"}, UpdateStrategy{[4]uint8{Auto}}, true, ""},
 	{&FakeGitFlow{false, false, false, "v1.0.0", "v2.0.0"}, UpdateStrategy{[4]uint8{Manual}}, true, "y"},
 	{&FakeGitFlow{false, false, false, "v1.0.0", "v2.0.0"}, UpdateStrategy{[4]uint8{Manual}}, true, "n"},
@@ -208,7 +208,7 @@ func TestGetStrategy(t *testing.T) {
 	s := new(UpdateStrategy)
 	// Checks with invalids version's type but valid entries for this method.
 	if Noop != s.getStrategy(-1) || Noop != s.getStrategy(BuildMetadata) {
-		t.Errorf("Expected no operation witn unknown version type")
+		t.Errorf("Expected no operation with unknown version type")
 	}
 	// Checks with valid bounces
 	for _, ac := range actionTests {
@@ -251,7 +251,7 @@ func TestParseConfirm(t *testing.T) {
 				t.Errorf("Expected result %t for confirm with %v, received: %t", cf.ok, cf.str, ok)
 			}
 		} else if !cf.onErr {
-			t.Errorf("Expected no error for confirm with %v, received:", cf.str, err)
+			t.Errorf("Expected no error for confirm with %v, received: %v", cf.str, err)
 		}
 	}
 }

@@ -10,14 +10,15 @@ const (
 	errMsgSemanticVersion = "not a valid semantic version"
 )
 
-// Semantic Versioning 2.0.0
-// http://semver.org/spec/v2.0.0.html
+// Version represents a semantic versioning like 2.0.0.
+// @see http://semver.org/spec/v2.0.0.html
 // @example v1.2.3
 type Version struct {
 	Major, Minor, Patch uint8
 	PreRelease, Build   string
 }
 
+// Relationship represents the difference between two versions.
 type Relationship struct {
 	Major, Minor, Patch int8
 	PreRelease, Build   string
